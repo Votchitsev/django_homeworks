@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 
-# from work_with_database.phones.models import Phone
 from phones.models import Phone
 
 
