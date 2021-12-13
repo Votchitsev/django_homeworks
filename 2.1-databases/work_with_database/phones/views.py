@@ -3,24 +3,27 @@ from django.shortcuts import render, redirect
 from phones.models import Phone
 
 
+SORT_MAP = {
+    'name': 'name',
+    'min_price': 'price',
+    'max_price': '-price'
+}
+
+
 def index(request):
     return redirect('catalog')
 
 
 def show_catalog(request):
     template = 'catalog.html'
-    sort = request.GET.get('sort', 'name')
+    sort = request.GET.get('sort')
 
-    if sort == 'name':
-        context = {'phones': Phone.objects.order_by('name')}
-    elif sort == 'min_price':
-        context = {'phones': Phone.objects.order_by('price')}
-    elif sort == 'max_price':
-        context = {'phones': Phone.objects.order_by('-price')}
+    if sort:
+        context = {'phones': Phone.objects.order_by(SORT_MAP[sort])}
+        return render(request, template, context)
     else:
-        context = {'phones': Phone.objects.all()}
-
-    return render(request, template, context)
+        context = {'phones': Phone.objects.order_by('name')}
+        return render(request, template, context)
 
 
 def show_product(request, slug):
