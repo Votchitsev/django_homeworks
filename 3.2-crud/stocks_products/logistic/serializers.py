@@ -37,6 +37,13 @@ class StockSerializer(serializers.ModelSerializer):
         positions = validated_data.pop('positions')
         stock = super().update(instance, validated_data)
 
+        stocks_products = StockProduct.objects.filter(stock=stock)
+        products = [product['product'] for product in positions]
+
+        for product in stocks_products:
+            if product.product not in products:
+                product.delete()
+
         for position in positions:
             StockProduct.objects.update_or_create(stock=stock, product=position['product'], defaults={
                     'product': position['product'],
