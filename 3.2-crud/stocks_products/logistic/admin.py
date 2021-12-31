@@ -5,7 +5,7 @@ from .models import Product, StockProduct, Stock
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description')
+    list_display = ('id', 'title', 'description')
 
 
 class StockProductInline(admin.TabularInline):
