@@ -16,12 +16,16 @@ class ProductViewSet(ModelViewSet):
 class StockViewFilter(BaseFilterBackend):
 
     def filter_queryset(self, request, queryset, view):
-        product_title = request.GET['products']
-        product_title = product_title.capitalize()
-        return queryset.filter(
-            Q(products__title__icontains=product_title) |
-            Q(products__description__icontains=product_title)
-        ).order_by('id')
+        try:
+            product_title = request.GET['products']
+            product_title = product_title.capitalize()
+            print('Yes')
+            return queryset.filter(
+                Q(products__title__icontains=product_title) |
+                Q(products__description__icontains=product_title)
+            ).order_by('id')
+        except KeyError:
+            return queryset
 
 
 class StockViewSet(ModelViewSet):
