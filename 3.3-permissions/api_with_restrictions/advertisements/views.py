@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
@@ -10,14 +11,19 @@ from advertisements.serializers import AdvertisementSerializer
 
 class AdvertisementViewSet(ModelViewSet):
     """ViewSet для объявлений."""
+
     queryset = Advertisement.objects.all()
     serializer_class = AdvertisementSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = AdvertisementFilter
+    authentication_classes = [TokenAuthentication]
 
     def get_permissions(self):
         """Получение прав для действий."""
-        if self.action in ["create", "list"]:
+
+        if self.action in ["create"]:
             return [IsAuthenticated()]
-        elif self.action in ['update', 'partial_update']:
+        elif self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsOwnerOrReadOnly()]
+        elif self.action == "list":
+            return []

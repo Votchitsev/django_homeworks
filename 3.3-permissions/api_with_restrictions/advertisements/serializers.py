@@ -23,36 +23,22 @@ class AdvertisementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertisement
         fields = ('id', 'title', 'description', 'creator',
-                  'status', 'created_at', )
+                  'status', 'created_at',)
 
     def create(self, validated_data):
         """Метод для создания"""
-        # Простановка значения поля создатель по-умолчанию.
-        # Текущий пользователь является создателем объявления
-        # изменить или переопределить его через API нельзя.
-        # обратите внимание на `context` – он выставляется автоматически
-        # через методы ViewSet.
-        # само поле при этом объявляется как `read_only=True`
         validated_data["creator"] = self.context["request"].user
         return super().create(validated_data)
 
     def validate(self, data):
         """Метод для валидации. Вызывается при создании и обновлении."""
-        return data
-        # TODO: добавьте требуемую валидации
-        # action = self.context['view'].action
-        # user = self.context['request'].user
-        #
-        # if action == 'create':
-        #     number_of_open_advertisements = len(Advertisement.objects.filter(status='OPEN', creator=user))
-        #     if number_of_open_advertisements <= 10:
-        #         return data
-        #     else:
-        #         raise ValueError
-        # elif action == 'partial_update' or action == 'delete':
-        #
-        #     if user == self.instance.creator:
-        #         return data
-        #     else:
-        #         raise ValueError
 
+        action = self.context['view'].action
+        user = self.context['request'].user
+
+        if action == 'create':
+            number_of_open_advertisements = len(Advertisement.objects.filter(status='OPEN', creator=user))
+            if number_of_open_advertisements < 10:
+                return data
+            else:
+                raise serializers.ValidationError('Пользователь не может разместить больше 10 открытых объявлений.')
