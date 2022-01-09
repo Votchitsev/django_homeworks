@@ -42,3 +42,5 @@ class AdvertisementSerializer(serializers.ModelSerializer):
                 return data
             else:
                 raise serializers.ValidationError('Пользователь не может разместить больше 10 открытых объявлений.')
+        else:
+            return data
