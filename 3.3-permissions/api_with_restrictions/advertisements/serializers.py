@@ -36,11 +36,12 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         action = self.context['view'].action
         user = self.context['request'].user
 
-        if action == 'create':
+        if action in ['create', 'update', 'partial_update']:
             number_of_open_advertisements = len(Advertisement.objects.filter(status='OPEN', creator=user))
-            if number_of_open_advertisements < 10:
+            if data['status'] and data['status'] == 'CLOSED':
                 return data
             else:
-                raise serializers.ValidationError('Пользователь не может разместить больше 10 открытых объявлений.')
-        else:
-            return data
+                if number_of_open_advertisements < 10:
+                    return data
+                else:
+                    raise serializers.ValidationError('Пользователь не может разместить больше 10 открытых объявлений.')
