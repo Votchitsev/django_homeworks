@@ -38,7 +38,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 
         if action in ['create', 'update', 'partial_update']:
             number_of_open_advertisements = len(Advertisement.objects.filter(status='OPEN', creator=user))
-            if data['status'] and data['status'] == 'CLOSED':
+            if 'status' in data.keys() and data['status'] == 'CLOSED':
                 return data
             else:
                 if number_of_open_advertisements < 10:
