@@ -1,5 +1,4 @@
 import json
-from pprint import pprint
 
 import pytest
 from django.urls import reverse
@@ -110,3 +109,35 @@ def test_creating_course(client):
 
     assert Course.objects.filter(name=response.data['name'])
     assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_update_course(course_factory, client):
+
+    course = course_factory()
+
+    course_data_for_updating = {
+        "name": "New_name"
+    }
+
+    course_data_for_updating_json = json.dumps(course_data_for_updating)
+
+    url = f'http://127.0.0.1:8000/api/v1/courses/{course.id}/'
+
+    response = client.patch(url, data=course_data_for_updating_json, content_type="Application/json")
+
+    assert response.status_code == 200
+    assert Course.objects.filter(id=course.id)[0].name == "New_name"
+
+
+@pytest.mark.django_db
+def test_delete_course(course_factory, client):
+
+    course = course_factory()
+
+    url = f"http://127.0.0.1:8000/api/v1/courses/{course.id}/"
+
+    response = client.delete(url)
+
+    assert response.status_code == 204
+    assert client.get(url).status_code == 404
