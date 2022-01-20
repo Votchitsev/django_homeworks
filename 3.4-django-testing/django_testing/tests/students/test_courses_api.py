@@ -29,56 +29,43 @@ def student_factory():
 
 @pytest.mark.django_db
 def test_get_first_course(course_factory, client):
-    course = course_factory()
-    url = reverse("courses-list")
+    course_factory(_quantity=10)
+
+    course_query = Course.objects.first()
+    url = f"http://127.0.0.1:8000/api/v1/courses/{course_query.id}/"
     response = client.get(url)
 
     assert response.status_code == 200
-    assert response.data[0]['id'] == course.id
-    assert response.data[0]['name'] == course.name
+    assert response.data['id'] == course_query.id
+    assert response.data['name'] == course_query.name
 
 
 @pytest.mark.django_db
 def test_get_courses_list(course_factory, client):
     courses = course_factory(_quantity=20)
+
     url = reverse('courses-list')
     response = client.get(url)
 
-    id_list_response = [i['id'] for i in response.data]
-    id_list_db = [i.id for i in courses]
-    id_set = set(id_list_response + id_list_db)
-
-    name_list_response = [i['name'] for i in response.data]
-    name_list_db = [i.name for i in courses]
-    name_set = set(name_list_response + name_list_db)
-
     assert response.status_code == 200
-    assert len(courses) == len(response.data)
-    assert len(id_set) == 20
-    assert len(name_set) == 20
+    assert len(response.data) == len(courses)
+
+    for index, course in enumerate(response.data):
+        assert courses[index].name == course['name']
 
 
 @pytest.mark.django_db
 def test_courses_list_filter(course_factory, client):
-
-    def get_course(courses_list, course_id):
-        for course in courses_list:
-            if course.id == course_id:
-                return course.name
-            else:
-                pass
-
-    courses = course_factory(_quantity=20)
-    url = 'http://127.0.0.1:8000/api/v1/courses/?id=25'
+    course_factory(_quantity=20)
+    course_for_filtering = Course.objects.first()
+    url = f'http://127.0.0.1:8000/api/v1/courses/?id={course_for_filtering.id}'
     response = client.get(url)
     response_json = response.json()
 
-    course_name = get_course(courses, 25)
-
     assert response.status_code == 200
     assert len(response_json) == 1
-    assert response_json[0]['id'] == 25
-    assert response_json[0]['name'] == course_name
+    assert response_json[0]['id'] == course_for_filtering.id
+    assert response_json[0]['name'] == course_for_filtering.name
 
 
 @pytest.mark.django_db
@@ -127,7 +114,7 @@ def test_update_course(course_factory, client):
     response = client.patch(url, data=course_data_for_updating_json, content_type="Application/json")
 
     assert response.status_code == 200
-    assert Course.objects.filter(id=course.id)[0].name == "New_name"
+    assert response.data['name'] == "New_name"
 
 
 @pytest.mark.django_db
